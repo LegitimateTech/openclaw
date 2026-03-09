@@ -5,6 +5,8 @@ services:
     plan: standard
     healthCheckPath: /health
     envVars:
+      - key: OPENCLAW_DOCKER_APT_PACKAGES
+        value: tmux ffmpeg
       - key: OPENCLAW_INSTALL_BROWSER
         value: 1
       - key: SETUP_PASSWORD
