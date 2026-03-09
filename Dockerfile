@@ -154,6 +154,26 @@ RUN --mount=type=cache,id=openclaw-bookworm-apt-cache,target=/var/cache/apt,shar
       DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $OPENCLAW_DOCKER_APT_PACKAGES; \
     fi
 
+# Brew prerequisites (root)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential ca-certificates curl file git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Prepare Homebrew prefix with correct ownership (root)
+RUN mkdir -p /home/linuxbrew/.linuxbrew \
+ && chown -R node:node /home/linuxbrew
+
+USER node
+RUN NONINTERACTIVE=1 /bin/bash -lc \
+  "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Persist brew on PATH for later layers
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
+
+# Back to root if you need apt / permissions later
+USER root
+
+
 # Optionally install Chromium and Xvfb for browser automation.
 # Build with: docker build --build-arg OPENCLAW_INSTALL_BROWSER=1 ...
 # Adds ~300MB but eliminates the 60-90s Playwright install on every container start.
